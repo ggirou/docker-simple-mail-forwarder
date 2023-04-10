@@ -1,8 +1,9 @@
 FROM alpine:3.12
 LABEL maintainer="Huan LI <zixia@zixia.net>"
 
-ENV BATS_VERSION 1.2.1
-ENV S6_VERSION 2.1.0.0
+ARG BUILDKIT_CONTEXT_KEEP_GIT_DIR=1
+ARG BATS_VERSION=1.9.0
+ARG S6_VERSION=3.1.4.2
 
 ## Install System
 
@@ -23,8 +24,9 @@ RUN apk add --update --no-cache \
         postfix \
         postfix-pcre \
         syslog-ng \
+        tar \
         tzdata \
-    \
+        xz \
     && curl -s -o "/tmp/v${BATS_VERSION}.tar.gz" -L \
         "https://github.com/bats-core/bats-core/archive/v${BATS_VERSION}.tar.gz" \
     && tar -xzf "/tmp/v${BATS_VERSION}.tar.gz" -C /tmp/ \
@@ -76,8 +78,8 @@ COPY BANNER /app/
 COPY VERSION /app/
 COPY test /app/test
 
-COPY .git/logs/HEAD /app/GIT_LOG
-COPY .git/HEAD /app/GIT_HEAD
+COPY .git/logs/HEAD /app/.git/logs/HEAD
+COPY .git/HEAD /app/.git/HEAD
 COPY install/buildenv.sh /app/
 
 VOLUME ["/var/spool/postfix"]
@@ -90,5 +92,5 @@ CMD ["start"]
 
 ## Log Environment (in Builder)
 
-RUN bash buildenv.sh
+RUN bash -xe buildenv.sh
 

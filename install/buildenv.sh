@@ -7,7 +7,7 @@ ENV_FILE=BUILD.env
 # Get Github info from LOG file
 #
 RE='^[^ ]+\s+([^ ]+)\s+(.+)\s+<(.+)>\s+([0-9]+)\s+([+-][0-9]{4,4})\s+(.+)$'
-[[ `tail -1 GIT_LOG` =~ $RE ]]
+[[ `tail -1 .git/logs/HEAD` =~ $RE ]]
 hash=${BASH_REMATCH[1]}
 author=${BASH_REMATCH[2]}
 email=${BASH_REMATCH[3]}
@@ -28,7 +28,7 @@ date=`TZ=$tz_tmp awk '{ print strftime("%c", $0); }' <<< $date`
 date="$date $tz"
 
 ## get source branch
-read branch < GIT_HEAD
+read branch < .git/HEAD
 branch=${branch##*/}
 
 ## short hash as github, lentgh: 7
