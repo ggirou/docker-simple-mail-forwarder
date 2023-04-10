@@ -1,9 +1,24 @@
+# syntax=docker/dockerfile:1
+
+ARG BUILDKIT_CONTEXT_KEEP_GIT_DIR=1
+
+FROM alpine AS builder
+
+RUN apk add --update --no-cache bash git
+
+COPY install/buildenv.sh .
+COPY .git/ .
+
+## Log Environment (in Builder)
+RUN bash -e buildenv.sh
+
+# ------------------------------------------
+
 FROM alpine:3.12
 LABEL maintainer="Huan LI <zixia@zixia.net>"
 
-ARG BUILDKIT_CONTEXT_KEEP_GIT_DIR=1
-ARG BATS_VERSION=1.9.0
-ARG S6_VERSION=3.1.4.2
+ARG BATS_VERSION=1.2.1
+ARG S6_VERSION=2.1.0.0
 
 ## Install System
 
@@ -77,10 +92,7 @@ RUN bash -n /entrypoint.sh && chmod a+x /entrypoint.sh
 COPY BANNER /app/
 COPY VERSION /app/
 COPY test /app/test
-
-COPY .git/logs/HEAD /app/.git/logs/HEAD
-COPY .git/HEAD /app/.git/HEAD
-COPY install/buildenv.sh /app/
+COPY --from=builder /BUILD.env /app/
 
 VOLUME ["/var/spool/postfix"]
 
@@ -88,9 +100,3 @@ EXPOSE 25
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["start"]
-
-
-## Log Environment (in Builder)
-
-RUN bash -xe buildenv.sh
-
